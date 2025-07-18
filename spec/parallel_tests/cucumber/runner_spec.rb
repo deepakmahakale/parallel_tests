@@ -21,7 +21,7 @@ describe ParallelTests::Cucumber::Runner do
           "Failing Scenarios:", "cucumber features/failure:3", "cucumber features/failure:4",
           "Failing Scenarios:", "cucumber features/failure:5", "cucumber features/failure:6"
         ]
-        output = call(results)
+        output = call(results, {})
         output.gsub!(/.*WARNING.*\n/, "")
         expect(output).to eq(<<~TXT)
           Failing Scenarios:
@@ -42,7 +42,7 @@ describe ParallelTests::Cucumber::Runner do
           "Failing Scenarios:", "cucumber features/failure:5", "cucumber features/failure:6",
           "Flaky Scenarios:", "cucumber features/failure:7", "cucumber features/failure:8"
         ]
-        expect(call(results)).to eq("Failing Scenarios:\ncucumber features/failure:1\ncucumber features/failure:2\ncucumber features/failure:5\ncucumber features/failure:6\n\nFlaky Scenarios:\ncucumber features/failure:3\ncucumber features/failure:4\ncucumber features/failure:7\ncucumber features/failure:8\n\n")
+        expect(call(results, {})).to eq("Failing Scenarios:\ncucumber features/failure:1\ncucumber features/failure:2\ncucumber features/failure:5\ncucumber features/failure:6\n\nFlaky Scenarios:\ncucumber features/failure:3\ncucumber features/failure:4\ncucumber features/failure:7\ncucumber features/failure:8\n\n")
       end
     end
   end

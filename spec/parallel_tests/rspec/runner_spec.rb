@@ -137,7 +137,7 @@ describe ParallelTests::RSpec::Runner do
       before { allow($stdout).to receive(:tty?).and_return false }
 
       it 'is not colourized' do
-        results = ParallelTests::RSpec::Runner.send(:summarize_results, ['1 example, 0 failures, 0 pendings'])
+        results = ParallelTests::RSpec::Runner.send(:summarize_results, ['1 example, 0 failures, 0 pendings'], {})
 
         expect(results).to eq('1 example, 0 failures, 0 pendings')
       end
@@ -146,7 +146,7 @@ describe ParallelTests::RSpec::Runner do
     context 'on TTY device' do
       before { allow($stdout).to receive(:tty?).and_return true }
 
-      subject(:colorized_results) { ParallelTests::RSpec::Runner.send(:summarize_results, [result_string]) }
+      subject(:colorized_results) { ParallelTests::RSpec::Runner.send(:summarize_results, [result_string], {}) }
 
       context 'when there are no pending or failed tests' do
         let(:result_string) { '1 example, 0 failures, 0 pendings' }
