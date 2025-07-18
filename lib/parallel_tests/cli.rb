@@ -82,17 +82,24 @@ module ParallelTests
           num_processes = 1
         end
 
-        report_number_of_tests(groups, consolidated_results) unless options[:quiet]
+        # Always populate consolidated results for tests info if consolidated results is requested
+        report_number_of_tests(groups, consolidated_results, options) if !options[:quiet] || options[:consolidated_results]
         test_results = execute_in_parallel(groups, groups.size, options) do |group, index|
           run_tests(group, index, num_processes, options)
         end
-        report_results(test_results, consolidated_results, options) unless options[:quiet]
+        # Always populate consolidated results for summary if consolidated results is requested
+        report_results(test_results, consolidated_results, options) if !options[:quiet] || options[:consolidated_results]
       end
 
       if options[:quiet]
-        run_tests_proc.call
+        # Still capture timing if consolidated results are requested
+        if options[:consolidated_results]
+          report_time_taken(consolidated_results, options, &run_tests_proc)
+        else
+          run_tests_proc.call
+        end
       else
-        report_time_taken(consolidated_results, &run_tests_proc)
+        report_time_taken(consolidated_results, options, &run_tests_proc)
       end
 
       write_consolidated_results(consolidated_results, options)
@@ -153,8 +160,10 @@ module ParallelTests
       results = @runner.find_results(test_results.map { |result| result[:stdout] } * "")
       @runner.summarize_results(results, consolidated_results)
 
-      puts ""
-      puts consolidated_results[:summary][:message]
+      unless options[:quiet]
+        puts ""
+        puts consolidated_results[:summary][:message]
+      end
 
       report_failure_rerun_commmand(test_results, options)
     end
@@ -173,7 +182,7 @@ module ParallelTests
       end
     end
 
-    def report_number_of_tests(groups, consolidated_results)
+    def report_number_of_tests(groups, consolidated_results, options = {})
       name = @runner.test_file_name
       num_processes = groups.size
       num_tests = groups.map(&:size).sum
@@ -185,7 +194,7 @@ module ParallelTests
         processes: num_processes,
         tests_per_process: tests_per_process
       }
-      puts message
+      puts message unless options[:quiet]
     end
 
     def pluralize(n, singular)
@@ -456,14 +465,14 @@ module ParallelTests
       abort if results.any? { |r| r[:exit_status] != 0 }
     end
 
-    def report_time_taken(consolidated_results, &block)
+    def report_time_taken(consolidated_results, options = {}, &block)
       seconds = ParallelTests.delta(&block).to_i
       message = "Took #{seconds} seconds#{detailed_duration(seconds)}"
       consolidated_results[:time_taken] = {
         seconds: seconds,
         message: message
       }
-      puts "\n#{message}"
+      puts "\n#{message}" unless options[:quiet]
     end
 
     def detailed_duration(seconds)
