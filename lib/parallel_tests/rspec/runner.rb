@@ -57,7 +57,7 @@ module ParallelTests
 
         # Summarize results from threads and colorize results based on failure and pending counts.
         #
-        def summarize_results(results)
+        def summarize_results(results, consolidated_results)
           text = super
           return text unless $stdout.tty?
           sums = sum_up_results(results)
@@ -69,7 +69,12 @@ module ParallelTests
             else
               32 # green
             end
-          "\e[#{color}m#{text}\e[0m"
+          colorized_text = "\e[#{color}m#{text}\e[0m"
+          
+          # Update consolidated results with colorized message
+          consolidated_results[:summary][:message] = colorized_text
+          
+          colorized_text
         end
 
         private
